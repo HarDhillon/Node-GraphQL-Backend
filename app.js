@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-
+const path = require('path')
 const express = require('express');
 const mongoose = require('mongoose')
 
@@ -10,6 +10,8 @@ const app = express();
 // ===========================================
 
 app.use(express.json())
+
+app.use('/images', express.static(path.join(__dirname, 'images')))
 
 // Allow CORS
 app.use((req, res, next) => {

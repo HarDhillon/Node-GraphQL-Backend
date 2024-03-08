@@ -10,7 +10,8 @@
   "author": "Har",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.3"
+    "express": "^4.18.3",
+    "express-validator": "^7.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"

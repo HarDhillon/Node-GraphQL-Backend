@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator')
 const Post = require('../models/post')
+const post = require('../models/post')
 
 exports.getPosts = (req, res, next) => {
     Post.find()
@@ -8,7 +9,12 @@ exports.getPosts = (req, res, next) => {
                 posts
             })
         })
-        .catch(err => console.log(err))
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500
+            }
+            next(err)
+        })
 }
 
 exports.createPost = (req, res, next) => {
@@ -37,6 +43,30 @@ exports.createPost = (req, res, next) => {
             res.status(201).json({
                 message: 'Post created successfully',
                 post: result
+            })
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500
+            }
+            next(err)
+        })
+}
+
+exports.getPost = (req, res, next) => {
+    const postId = req.params.postId
+
+    Post.findById(postId)
+        .then(post => {
+            // If cant find post
+            if (!post) {
+                const error = new Error('Could not locate post')
+                error.statusCode = 404
+                throw (error)
+            }
+            res.status(200).json({
+                message: 'Post fetched',
+                post: post
             })
         })
         .catch(err => {

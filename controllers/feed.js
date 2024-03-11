@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator')
 const Post = require('../models/post')
 const fs = require('fs')
 const path = require('path')
+const post = require('../models/post')
 
 exports.getPosts = (req, res, next) => {
     Post.find()
@@ -140,7 +141,37 @@ exports.updatePost = (req, res, next) => {
         })
 }
 
+exports.deletePost = (req, res, next) => {
+    const postId = req.params.postId
+    Post.findById(postId)
+        .then(post => {
+            if (!post) {
+                const error = new Error('Could not locate post')
+                error.statusCode = 404
+                throw (error)
+            }
+
+            // TODO Check logged in user
+
+            clearImage(post.imageUrl)
+            return Post.findOneAndDelete(postId)
+        })
+        .then(result => {
+            res.status(200).json({ nessage: 'Deleted post' })
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500
+            }
+            next(err)
+        })
+}
+
 const clearImage = filepath => {
     filePath = path.join(__dirname, '..', filepath)
-    fs.unlink(filepath, err => console.log(err))
+    fs.unlink(filepath, err => {
+        if (err !== null) {
+            console.log(err)
+        }
+    })
 }

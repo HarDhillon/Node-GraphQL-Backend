@@ -6,6 +6,8 @@ const User = require('../models/user')
 
 const router = express.Router()
 
+// * for /auth routes
+
 router.put('/signup', [
     body('email')
         .isEmail()
@@ -22,5 +24,7 @@ router.put('/signup', [
     body('password').trim().isLength({ min: 5 }),
     body('name').trim().not().isEmpty()
 ], authController.signup)
+
+router.post('/login', authController.login)
 
 module.exports = router

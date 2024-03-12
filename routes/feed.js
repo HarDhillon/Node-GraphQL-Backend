@@ -3,12 +3,13 @@ const { body } = require('express-validator')
 const router = express.Router()
 
 const feedController = require('../controllers/feed')
+const isAuth = require('../middleware/is-auth')
 
 // ===========================================
 
 //* Only for /feed/ paths
 
-router.get('/posts', feedController.getPosts);
+router.get('/posts', isAuth, feedController.getPosts);
 
 router.post('/post', [
     body('title')

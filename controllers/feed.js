@@ -146,6 +146,14 @@ exports.updatePost = (req, res, next) => {
                 error.statusCode = 404
                 throw (error)
             }
+
+            // Only allow owner of the post to update
+            if (post.creator.toString() !== req.userId) {
+                const error = new Error('Not authorized')
+                error.statusCode = 403
+                throw error
+            }
+
             // If imageUrl is changed, new file is uploaded
             if (imageUrl !== post.imageUrl) {
                 clearImage(post.imageUrl)
@@ -179,7 +187,12 @@ exports.deletePost = (req, res, next) => {
                 throw (error)
             }
 
-            // TODO Check logged in user
+            // Only allow owner of the post to update
+            if (post.creator.toString() !== req.userId) {
+                const error = new Error('Not authorized')
+                error.statusCode = 403
+                throw error
+            }
 
             clearImage(post.imageUrl)
             return Post.findOneAndDelete(postId)

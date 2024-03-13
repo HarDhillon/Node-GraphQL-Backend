@@ -198,6 +198,14 @@ exports.deletePost = (req, res, next) => {
             return Post.findOneAndDelete(postId)
         })
         .then(result => {
+            return User.findById(req.userId)
+        })
+        .then(user => {
+            // remove the post that has been deleted from the user as well
+            user.posts.pull(postId)
+            return user.save()
+        })
+        .then(result => {
             res.status(200).json({ nessage: 'Deleted post' })
         })
         .catch(err => {

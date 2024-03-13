@@ -206,7 +206,7 @@ exports.deletePost = (req, res, next) => {
             return user.save()
         })
         .then(result => {
-            res.status(200).json({ nessage: 'Deleted post' })
+            res.status(200).json({ message: 'Deleted post' })
         })
         .catch(err => {
             if (!err.statusCode) {

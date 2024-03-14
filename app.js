@@ -73,7 +73,20 @@ app.use((error, req, res, next) => {
 app.use('/graphql', graphqlHTTP({
     schema: graphqlSchema,
     rootValue: graphqlResolver,
-    graphiql: true
+    graphiql: true,
+    // Error handling
+    customFormatErrorFn(err) {
+        if (!err.originalError) {
+            return err
+        }
+        // If we have original error
+        const data = err.originalError.data
+        const message = err.message || 'An error occured'
+        const status = err.originalError.code || 500
+
+        return { message: message, status, data }
+
+    }
 }))
 
 mongoose.connect(process.env.MONGODB_URI)

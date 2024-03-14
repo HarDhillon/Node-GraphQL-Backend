@@ -6,6 +6,8 @@ const User = require('../models/user')
 const fs = require('fs')
 const path = require('path')
 
+const io = require('../socket')
+
 exports.getPosts = async (req, res, next) => {
     const currentPage = req.query.page || 1
     const perPage = 2
@@ -67,6 +69,15 @@ exports.createPost = async (req, res, next) => {
 
         user.posts.push(post)
         await user.save()
+
+        // our socket is initialized in our app.js
+        // * our action is defined as posts
+        // * User ._doc to strip out data added in by mongoose and get only object
+        io.getIO().emit('posts',
+            {
+                action: 'create',
+                post: { ...post._doc, creator: { _id: user._id, name: user.name } }
+            })
 
         res.status(201).json({
             message: 'Post created successfully',
@@ -135,7 +146,7 @@ exports.updatePost = async (req, res, next) => {
     }
 
     try {
-        const post = await Post.findById(postId)
+        const post = await Post.findById(postId).populate('creator')
 
         // If no post
         if (!post) {
@@ -145,7 +156,7 @@ exports.updatePost = async (req, res, next) => {
         }
 
         // Only allow owner of the post to update
-        if (post.creator.toString() !== req.userId) {
+        if (post.creator._id.toString() !== req.userId) {
             const error = new Error('Not authorized')
             error.statusCode = 403
             throw error
@@ -161,6 +172,8 @@ exports.updatePost = async (req, res, next) => {
         post.content = content
 
         const result = await post.save()
+
+        io.getIO().emit('posts', { action: 'update', post: result })
 
         // Update success
         res.status(200).json({ message: 'Post updated', post: result })

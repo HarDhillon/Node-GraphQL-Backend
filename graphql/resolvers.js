@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
 const User = require('../models/user')
+
+require('dotenv').config();
 
 const validator = require('validator')
 
@@ -40,5 +43,37 @@ module.exports = {
 
         const createdUser = await user.save()
         return { ...createdUser._doc, _id: createdUser._id.toString() }
+    },
+
+    login: async function ({ email, password }) {
+        const user = await User.findOne({ email: email })
+        // Check user exists
+        if (!user) {
+            const error = new Error('Email or Password is incorrect')
+            error.code = 401
+            throw error
+        }
+
+        // check if submitted password is equal to DB password
+        const isEqual = await bcrypt.compare(password, user.password)
+
+        if (!isEqual) {
+            const error = new Error('Email or Password is incorrect')
+            error.code = 401
+            throw error
+        }
+
+        // Generate our auth token
+        const token = jwt.sign(
+            {
+                userId: user._id.toString(),
+                email: user.email
+            },
+            process.env.JWT_TOKEN,
+            { expiresIn: '1h' }
+        )
+
+        return { token: token, userId: user._id.toString() }
+
     }
 }

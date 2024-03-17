@@ -84,7 +84,7 @@ app.put('/post-image', (req, res, next) => {
         throw new Error('not authenticated')
     }
     if (!req.file) {
-        return res.staus(200).json({ message: 'No file provided' })
+        return res.status(200).json({ message: 'No file provided' })
     }
 
     // If old path exists means new image was provided. Clear old image

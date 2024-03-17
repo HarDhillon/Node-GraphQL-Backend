@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const path = require('path')
+const fs = require('fs')
 const express = require('express');
 const mongoose = require('mongoose')
 const multer = require('multer')
@@ -78,6 +79,22 @@ app.use((error, req, res, next) => {
 // Check if every request is authorised or not. Returns true if authorised. False if not
 app.use(auth)
 
+app.put('/post-image', (req, res, next) => {
+    if (!req.isAuth) {
+        throw new Error('not authenticated')
+    }
+    if (!req.file) {
+        return res.staus(200).json({ message: 'No file provided' })
+    }
+
+    // If old path exists means new image was provided. Clear old image
+    if (req.body.oldPath) {
+        clearImage(req.body.oldPath)
+    }
+    return res.status(200).json({ message: 'File stored', filePath: req.file.path })
+
+})
+
 app.use('/graphql', graphqlHTTP({
     schema: graphqlSchema,
     rootValue: graphqlResolver,
@@ -102,3 +119,12 @@ mongoose.connect(process.env.MONGODB_URI)
         const server = app.listen(8080)
         console.log('Success')
     }).catch(err => console.log(err))
+
+const clearImage = filepath => {
+    filePath = path.join(__dirname, '..', filepath)
+    fs.unlink(filepath, err => {
+        if (err !== null) {
+            console.log(err)
+        }
+    })
+}

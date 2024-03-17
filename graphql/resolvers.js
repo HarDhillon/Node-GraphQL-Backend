@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/user')
 const Post = require('../models/post')
 
+const { clearImage } = require('../util/file')
+
 require('dotenv').config();
 
 const validator = require('validator')
@@ -190,7 +192,7 @@ module.exports = {
             error.code = 404
             throw error
         }
-        if (!post.creator._id.toString() === req.userId.toString()) {
+        if (post.creator._id.toString() !== req.userId.toString()) {
             const error = new Error('Not authorised')
             error.code = 403
             throw error
@@ -226,6 +228,39 @@ module.exports = {
             createdAt: updatedPost.createdAt.toISOString(),
             updatedAt: updatedPost.updatedAt.toISOString()
         }
+
+    },
+    deletePost: async function ({ id }, req) {
+        // Auth check
+        if (!req.isAuth) {
+            const error = new Error('Not authenticated')
+            error.code = 401
+            throw error
+        }
+
+        const post = await Post.findById(id)
+        // Check if post exists
+        if (!post) {
+            const error = new Error('No post found')
+            error.code = 404
+            throw error
+        }
+        // Check if post user is same as request user
+        if (post.creator.toString() !== req.userId.toString()) {
+            const error = new Error('Not authorised')
+            error.code = 403
+            throw error
+        }
+
+        // delete image
+        clearImage(post.imageUrl)
+
+        await Post.findByIdAndDelete(id)
+        const user = await User.findById(req.userId)
+        user.posts.pull(id)
+        await user.save()
+
+        return true
 
     }
 }

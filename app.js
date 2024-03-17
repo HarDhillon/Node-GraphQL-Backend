@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const path = require('path')
-const fs = require('fs')
 const express = require('express');
 const mongoose = require('mongoose')
 const multer = require('multer')
@@ -10,6 +9,7 @@ const { graphqlHTTP } = require('express-graphql');
 const graphqlSchema = require('./graphql/schema')
 const graphqlResolver = require('./graphql/resolvers')
 const auth = require('./middleware/auth')
+const { clearImage } = require('./util/file')
 // ===========================================
 
 
@@ -119,12 +119,3 @@ mongoose.connect(process.env.MONGODB_URI)
         const server = app.listen(8080)
         console.log('Success')
     }).catch(err => console.log(err))
-
-const clearImage = filepath => {
-    filePath = path.join(__dirname, '..', filepath)
-    fs.unlink(filepath, err => {
-        if (err !== null) {
-            console.log(err)
-        }
-    })
-}

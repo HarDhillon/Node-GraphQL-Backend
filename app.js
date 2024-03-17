@@ -8,6 +8,7 @@ const { graphqlHTTP } = require('express-graphql');
 
 const graphqlSchema = require('./graphql/schema')
 const graphqlResolver = require('./graphql/resolvers')
+const auth = require('./middleware/auth')
 // ===========================================
 
 
@@ -73,6 +74,9 @@ app.use((error, req, res, next) => {
         data: data
     })
 })
+
+// Check if every request is authorised or not. Returns true if authorised. False if not
+app.use(auth)
 
 app.use('/graphql', graphqlHTTP({
     schema: graphqlSchema,
